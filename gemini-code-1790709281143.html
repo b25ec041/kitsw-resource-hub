@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KITSW Academic & Peer Resource Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs (v10 Compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <style>
+        .kitsw-blue { background-color: #0d2847; }
+        .kitsw-gold { color: #d4af37; }
+        .bg-kitsw-gold { background-color: #d4af37; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Global Header -->
+    <header class="kitsw-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('page1')">
+                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-xs text-blue-900 border-2 border-amber-400">
+                    KITSW
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">KITSW Resource Vault</h1>
+                    <p class="text-xs text-amber-300">Kakatiya Institute of Technology & Science, Warangal</p>
+                </div>
+            </div>
+
+            <!-- Navigation Bar -->
+            <nav class="hidden lg:flex space-x-1 text-sm font-medium">
+                <button onclick="navigateTo('page1')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-right-to-bracket mr-1"></i> Login</button>
+                <button onclick="navigateTo('page2')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-filter mr-1"></i> Courses</button>
+                <button onclick="navigateTo('page3')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-folder-open mr-1"></i> Vault & Upload</button>
+                <button onclick="navigateTo('page4')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-chart-line mr-1"></i> QP Analysis</button>
+                <button onclick="navigateTo('page5')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-comments mr-1"></i> Reviews</button>
+                <button onclick="navigateTo('page6')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-robot mr-1"></i> AI Assistant</button>
+                <button onclick="navigateTo('page7')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-user-shield mr-1"></i> Admin</button>
+                <button onclick="navigateTo('page8')" class="px-3 py-2 rounded hover:bg-slate-800 transition"><i class="fa-solid fa-lightbulb mr-1"></i> Idea Hub</button>
+            </nav>
+
+            <span id="user-badge" class="hidden text-xs bg-amber-400 text-slate-900 font-bold px-3 py-1 rounded-full">
+                Student Mode
+            </span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+
+        <!-- 1. LOGIN PAGE -->
+        <section id="page1" class="page-view max-w-md mx-auto my-12 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
+            <div class="kitsw-blue p-6 text-center text-white">
+                <div class="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center border-4 border-amber-400 mb-3 shadow">
+                    <span class="text-xl font-extrabold text-blue-900">KITSW</span>
+                </div>
+                <h2 class="text-2xl font-bold">Student Portal Login</h2>
+                <p class="text-xs text-slate-300 mt-1">Access past notes, ODTs, exam analysis & peer guidance</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-700">Student Roll No.</label>
+                    <input type="text" id="student-id" placeholder="e.g., B22CS045" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-700">Password</label>
+                    <input type="password" placeholder="••••••••" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full kitsw-blue text-white py-2.5 rounded-lg font-semibold hover:bg-slate-800 transition shadow">
+                    Login to Portal <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </form>
+        </section>
+
+        <!-- 2. BRANCH & COURSE FILTER PAGE -->
+        <section id="page2" class="page-view hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fa-solid fa-sliders text-amber-500 mr-2"></i>Select Department & Course</h2>
+                <p class="text-sm text-slate-500 mb-6">Filter study materials, past ODTs, and question papers by subject or faculty.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Select Branch</label>
+                        <select id="branch-select" class="w-full p-2.5 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-900">
+                            <option>Computer Science & Engineering (CSE)</option>
+                            <option>CS & AI/ML (CSM)</option>
+                            <option>Electronics & Communication (ECE)</option>
+                            <option>Electrical & Electronics (EEE)</option>
+                            <option>Mechanical Engineering (ME)</option>
+                            <option>Civil Engineering (CE)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Select Subject</label>
+                        <select id="course-select" class="w-full p-2.5 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-900">
+                            <option>Data Structures & Algorithms</option>
+                            <option>Database Management Systems</option>
+                            <option>Operating Systems</option>
+                            <option>Digital Logic Design</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t flex flex-wrap gap-3">
+                    <button onclick="navigateTo('page3')" class="flex-1 min-w-[200px] bg-blue-900 text-white py-3 rounded-lg font-medium hover:bg-blue-800 transition text-center shadow">
+                        <i class="fa-solid fa-file-lines mr-2"></i>View Materials & Uploads
+                    </button>
+                    <button onclick="navigateTo('page4')" class="flex-1 min-w-[200px] bg-amber-500 text-slate-900 py-3 rounded-lg font-bold hover:bg-amber-400 transition text-center shadow">
+                        <i class="fa-solid fa-magnifying-glass-chart mr-2"></i>QP Analysis
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. RESOURCE REPOSITORY & PERMANENT FILE UPLOAD PAGE -->
+        <section id="page3" class="page-view hidden space-y-6">
+            <!-- File Upload Widget -->
+            <div class="bg-blue-900 text-white p-6 rounded-xl shadow">
+                <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-cloud-arrow-up text-amber-400 mr-2"></i> Upload Notes / ODTs / Papers</h3>
+                <p class="text-xs text-slate-300 mb-4">Files uploaded here are stored permanently in cloud storage for all KITSW students.</p>
+                <form onsubmit="uploadFileToStorage(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input type="text" id="file-title" placeholder="Document Title (e.g. ODT-1 Solved)" required class="p-2.5 text-slate-800 rounded-lg text-sm">
+                    <input type="file" id="file-input" required class="p-2 text-slate-200 text-sm bg-slate-800 rounded-lg">
+                    <button type="submit" id="upload-btn" class="bg-amber-400 text-slate-900 font-bold p-2.5 rounded-lg text-sm hover:bg-amber-300">
+                        Upload to Vault
+                    </button>
+                </form>
+            </div>
+
+            <!-- Uploaded Materials List -->
+            <div class="bg-white p-6 rounded-xl shadow border border-slate-200">
+                <h3 class="font-bold text-slate-800 text-lg mb-4"><i class="fa-solid fa-folder-open text-blue-900 mr-2"></i> Permanently Stored Resources</h3>
+                <div id="materials-list" class="space-y-3">
+                    <p class="text-sm text-slate-500 italic">Loading materials from database...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. QUESTION PAPER ANALYSIS PAGE -->
+        <section id="page4" class="page-view hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow border border-slate-200">
+                <div class="border-b pb-4 mb-4 flex justify-between items-start">
+                    <div>
+                        <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded">Subject Trends</span>
+                        <h2 class="text-2xl font-bold text-slate-800 mt-1">Data Structures - Exam Weightage</h2>
+                        <p class="text-sm text-slate-500">Analysis of previous year papers & high-probability questions</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+                        <h4 class="font-bold text-emerald-900 text-sm">Most Repeated Topic</h4>
+                        <p class="text-xl font-black text-emerald-700 mt-1">AVL Tree Rotations</p>
+                        <p class="text-xs text-emerald-800 mt-1">Found in 4 of last 5 end-sem papers</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                        <h4 class="font-bold text-blue-900 text-sm">ODT Priority</h4>
+                        <p class="text-xl font-black text-blue-700 mt-1">BFS & DFS Algorithms</p>
+                        <p class="text-xs text-blue-800 mt-1">High frequency 5-mark question</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                        <h4 class="font-bold text-amber-900 text-sm">Core Passing Threshold</h4>
+                        <p class="text-xl font-black text-amber-700 mt-1">Units 1, 2 & 4</p>
+                        <p class="text-xs text-amber-800 mt-1">Accounts for 68% of total marks</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. STUDENT REVIEWS PAGE -->
+        <section id="page5" class="page-view hidden space-y-6 max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-xl shadow border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-1"><i class="fa-solid fa-comments text-blue-900 mr-2"></i> Course & Faculty Feedback</h2>
+                <p class="text-sm text-slate-500 mb-6">Peer insights stored permanently in database.</p>
+
+                <form onsubmit="submitFeedback(event)" class="bg-slate-50 p-4 rounded-lg border mb-6 space-y-3">
+                    <h3 class="text-sm font-bold text-slate-700">Write Anonymous Review</h3>
+                    <input type="text" id="review-subject" placeholder="Subject / Faculty Name" required class="w-full p-2 border rounded text-sm">
+                    <textarea id="review-text" placeholder="Share details on course pace, evaluation strictness, and advice..." required class="w-full p-2 border rounded text-sm h-20"></textarea>
+                    <button type="submit" class="bg-blue-900 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-800">Submit Review</button>
+                </form>
+
+                <div id="reviews-list" class="space-y-3">
+                    <p class="text-sm text-slate-500 italic">Loading student reviews...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. AI ASSISTANT PAGE -->
+        <section id="page6" class="page-view hidden max-w-3xl mx-auto space-y-4">
+            <div class="bg-white rounded-xl shadow border border-slate-200 overflow-hidden flex flex-col h-[550px]">
+                <div class="kitsw-blue p-4 text-white flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-sm">AI</div>
+                        <div>
+                            <h3 class="font-bold text-sm">KITSW Academic Assistant</h3>
+                            <p class="text-xs text-amber-300">Instant answers for syllabus & exam query analysis</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-sm">
+                    <div class="flex items-start space-x-2">
+                        <div class="bg-blue-900 text-white rounded-lg p-3 max-w-[80%] shadow-sm">
+                            Hello! I am your KITSW AI Assistant. How can I help you analyze past question papers or prepare for your upcoming ODTs today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 border-t bg-white flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. ADMIN PAGE -->
+        <section id="page7" class="page-view hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fa-solid fa-chart-line text-blue-900 mr-2"></i> Admin System Monitoring</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="p-4 bg-slate-50 rounded-lg border text-center">
+                        <p class="text-xs text-slate-500 font-semibold">Database Status</p>
+                        <p class="text-xl font-bold text-emerald-600 mt-1">Connected</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-lg border text-center">
+                        <p class="text-xs text-slate-500 font-semibold">Storage Provider</p>
+                        <p class="text-xl font-bold text-blue-900 mt-1">Firebase Cloud</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. STUDENT IDEA HUB PAGE -->
+        <section id="page8" class="page-view hidden space-y-6 max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-xl shadow border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-1"><i class="fa-solid fa-lightbulb text-amber-500 mr-2"></i> Student Innovation Hub</h2>
+                <p class="text-xs text-slate-500 mb-4">Post project ideas or hackathon drafts. Stored permanently in Cloud DB.</p>
+
+                <form onsubmit="submitIdea(event)" class="bg-amber-50/50 p-4 rounded-lg border border-amber-200 mb-6 space-y-3">
+                    <input type="text" id="idea-title" placeholder="Project / Idea Title" required class="w-full p-2 border rounded text-sm">
+                    <textarea id="idea-desc" placeholder="Describe the idea in detail..." required class="w-full p-2 border rounded text-sm h-20"></textarea>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center space-x-2 text-xs text-slate-700">
+                            <input type="checkbox" id="idea-private" class="rounded">
+                            <span>Keep Private Draft</span>
+                        </label>
+                        <button type="submit" class="bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded text-sm hover:bg-amber-400">
+                            Post Idea
+                        </button>
+                    </div>
+                </form>
+
+                <div id="ideas-list" class="space-y-3">
+                    <p class="text-sm text-slate-500 italic">Loading ideas from database...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        // --- 1. FIREBASE CONFIGURATION ---
+        // Replace the placeholder values below with your real credentials from Firebase Console
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "your-app-id",
+            storageBucket: "your-app.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        // Initialize Firebase
+        let db = null;
+        let storage = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            storage = firebase.storage();
+            console.log("Firebase initialized successfully");
+        } catch (e) {
+            console.warn("Firebase not configured yet. Demo mode active.");
+        }
+
+        // --- 2. SINGLE PAGE APPLICATION NAVIGATION ---
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(pageId);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('student-id').value || 'Student';
+            const badge = document.getElementById('user-badge');
+            badge.innerText = studentId;
+            badge.classList.remove('hidden');
+            navigateTo('page2');
+        }
+
+        // --- 3. PERMANENT FILE UPLOAD (FIREBASE STORAGE) ---
+        async function uploadFileToStorage(e) {
+            e.preventDefault();
+            const title = document.getElementById('file-title').value;
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const btn = document.getElementById('upload-btn');
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            try {
+                if (storage && db) {
+                    // Upload file to Cloud Storage
+                    const storageRef = storage.ref(`kitsw_vault/${Date.now()}_${file.name}`);
+                    const uploadTask = await storageRef.put(file);
+                    const fileUrl = await uploadTask.ref.getDownloadURL();
+
+                    // Save record in Firestore Database
+                    await db.collection('materials').add({
+                        title: title,
+                        fileName: file.name,
+                        fileUrl: fileUrl,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    alert("File permanently saved to Cloud Storage!");
+                    loadMaterials();
+                } else {
+                    alert("Demo Mode: Configure Firebase API keys in HTML source to store real files on the cloud.");
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+                alert("Upload failed: Check Firebase credentials.");
+            } finally {
+                btn.innerText = "Upload to Vault";
+                btn.disabled = false;
+                e.target.reset();
+            }
+        }
+
+        async function loadMaterials() {
+            const container = document.getElementById('materials-list');
+            if (!db) {
+                container.innerHTML = `<p class="text-sm text-slate-500">Demo Data (Configure Firebase to enable live permanent persistence):</p>
+                <div class="p-3 bg-slate-50 border rounded flex justify-between items-center mt-2">
+                    <span class="font-bold text-sm">2025 Data Structures ODT-1 Solution Paper.pdf</span>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-1 rounded">Available</span>
+                </div>`;
+                return;
+            }
+
+            const snapshot = await db.collection('materials').orderBy('createdAt', 'desc').get();
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                container.innerHTML += `
+                    <div class="p-3 bg-slate-50 border rounded flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-sm text-slate-800">${item.title}</p>
+                            <p class="text-xs text-slate-500">${item.fileName}</p>
+                        </div>
+                        <a href="${item.fileUrl}" target="_blank" class="text-xs bg-blue-900 text-white px-3 py-1.5 rounded hover:bg-blue-800">
+                            <i class="fa-solid fa-download mr-1"></i> Download
+                        </a>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 4. PERMANENT REVIEWS (FIRESTORE DB) ---
+        async function submitFeedback(e) {
+            e.preventDefault();
+            const subject = document.getElementById('review-subject').value;
+            const text = document.getElementById('review-text').value;
+
+            if (db) {
+                await db.collection('reviews').add({
+                    subject: subject,
+                    text: text,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Review permanently saved to database!");
+                loadReviews();
+            } else {
+                alert("Demo Mode: Form submitted locally.");
+            }
+            e.target.reset();
+        }
+
+        async function loadReviews() {
+            const container = document.getElementById('reviews-list');
+            if (!db) {
+                container.innerHTML = `
+                    <div class="p-4 border rounded bg-white shadow-sm">
+                        <h4 class="font-bold text-sm text-slate-800">Data Structures & Algorithms</h4>
+                        <p class="text-xs text-slate-600 mt-1">"Focus on tree rotations and hashing algorithms. ODT scoring is standard."</p>
+                    </div>`;
+                return;
+            }
+
+            const snapshot = await db.collection('reviews').orderBy('createdAt', 'desc').get();
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                container.innerHTML += `
+                    <div class="p-4 border rounded bg-white shadow-sm">
+                        <h4 class="font-bold text-sm text-slate-800">${item.subject}</h4>
+                        <p class="text-xs text-slate-600 mt-1">"${item.text}"</p>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 5. PERMANENT IDEAS (FIRESTORE DB WITH UPVOTES) ---
+        async function submitIdea(e) {
+            e.preventDefault();
+            const title = document.getElementById('idea-title').value;
+            const desc = document.getElementById('idea-desc').value;
+            const isPrivate = document.getElementById('idea-private').checked;
+
+            if (db) {
+                await db.collection('ideas').add({
+                    title: title,
+                    desc: desc,
+                    isPrivate: isPrivate,
+                    votes: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Idea saved to database!");
+                loadIdeas();
+            } else {
+                alert("Demo Mode: Idea posted locally.");
+            }
+            e.target.reset();
+        }
+
+        async function loadIdeas() {
+            const container = document.getElementById('ideas-list');
+            if (!db) {
+                container.innerHTML = `
+                    <div class="p-4 border rounded bg-white shadow-sm flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">Smart Campus Library Return Bot</h4>
+                            <p class="text-xs text-slate-600">Autonomous line-follower bot concept for central library.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            const snapshot = await db.collection('ideas').orderBy('createdAt', 'desc').get();
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                container.innerHTML += `
+                    <div class="p-4 border rounded bg-white shadow-sm flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-sm text-slate-800">${item.title}</h4>
+                                <span class="text-[10px] ${item.isPrivate ? 'bg-slate-200 text-slate-700' : 'bg-green-100 text-green-800'} font-bold px-2 py-0.5 rounded">
+                                    ${item.isPrivate ? 'Private Draft' : 'Public Concept'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-600 mt-1">${item.desc}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // AI Chat Assistant Simulation
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            if(!input.value.trim()) return;
+
+            chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-amber-500 text-slate-900 rounded-lg p-3 max-w-[80%] font-medium">${input.value}</div></div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setTimeout(() => {
+                chatBox.innerHTML += `<div class="flex items-start space-x-2"><div class="bg-blue-900 text-white rounded-lg p-3 max-w-[80%]">Based on previous end-sem exam trends at KITSW, prioritize Unit 2 and Unit 4 algorithm proofs.</div></div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 600);
+        }
+
+        // On Application Load
+        window.onload = function() {
+            loadMaterials();
+            loadReviews();
+            loadIdeas();
+        };
+    </script>
+</body>
+</html>
